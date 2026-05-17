@@ -1035,12 +1035,39 @@ function renderActivationNote(grids,age,chars,isFX){
   if(hasWai)pals.push({name:'⑤ 遷移宮',val:grids.wai});
   const now=pals.filter(p=>getPalaceYears(p.val).has(age));
   const next=pals.filter(p=>getPalaceYears(p.val).has(age+1));
-  if(!now.length&&!next.length){targetEl('activation-note').innerHTML='';return;}
+
+  // ── 逢敗檢查（命宮、父母宮、子女宮）──
+  const rocy=new Date().getFullYear()-1911;
+  const xbNow=calcSumDigit(rocy);
+  const xbNext=calcSumDigit(rocy+1);
+  const baiPals=[
+    {name:'命宮',  val:grids.zong},
+    {name:'父母宮',val:grids.tian},
+    {name:'子女宮',val:grids.di},
+  ];
+  const baiNow =baiPals.filter(p=>p.val&&calcJihuiInfo(p.val,xbNow).name==='敗');
+  const baiNext=baiPals.filter(p=>p.val&&calcJihuiInfo(p.val,xbNext).name==='敗');
+
+  if(!now.length&&!next.length&&!baiNow.length&&!baiNext.length){
+    targetEl('activation-note').innerHTML='';return;
+  }
   let h='<div style="margin-top:14px;padding:11px 16px;background:#fdf8ef;border-radius:8px;border:1px solid #dcc88a;font-size:.9em;line-height:2">';
   if(now.length)
     h+=`<div><span style="background:#8B1A1A;color:#f5e6c8;padding:2px 11px;border-radius:10px;font-weight:bold;font-size:.82em">🔥 正在發動</span>${now.map(p=>`<span style="color:#8B1A1A;font-weight:bold;margin-left:8px">${p.name}</span>`).join('')}</div>`;
   if(next.length)
     h+=`<div style="margin-top:4px"><span style="background:#5a3e08;color:#f5e6c8;padding:2px 11px;border-radius:10px;font-weight:bold;font-size:.82em">⚡ 明年發動</span>${next.map(p=>`<span style="color:#7a5430;font-weight:bold;margin-left:8px">${p.name}</span>`).join('')}</div>`;
+  if(baiNow.length)
+    h+=`<div style="margin-top:6px;padding:6px 10px;background:#f0f0f0;border-radius:6px;border-left:3px solid #555">
+      <span style="background:#555;color:white;padding:2px 10px;border-radius:10px;font-weight:bold;font-size:.82em">❄️ 今年逢敗</span>
+      ${baiNow.map(p=>`<span style="color:#555;font-weight:bold;margin-left:8px">${p.name}</span>`).join('')}
+      <div style="margin-top:3px;font-size:.8em;color:#888">冰冷黑暗，萬物隱藏。宜守不宜攻，低調蓄積能量為上。</div>
+    </div>`;
+  if(baiNext.length)
+    h+=`<div style="margin-top:6px;padding:6px 10px;background:#f5f5f5;border-radius:6px;border-left:3px solid #888">
+      <span style="background:#888;color:white;padding:2px 10px;border-radius:10px;font-weight:bold;font-size:.82em">🌑 明年逢敗</span>
+      ${baiNext.map(p=>`<span style="color:#666;font-weight:bold;margin-left:8px">${p.name}</span>`).join('')}
+      <div style="margin-top:3px;font-size:.8em;color:#aaa">明年將入敗運，提早佈局守成，避免重大決策。</div>
+    </div>`;
   h+='</div>';
   targetEl('activation-note').innerHTML=h;
 }
